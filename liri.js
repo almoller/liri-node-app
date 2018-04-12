@@ -38,7 +38,10 @@ function song() {
 }
 
 function movie() {
-    var movieTitle = "";
+    if (process.argv[3] === undefined) {
+        var movieTitle = "Mr Nobody";
+    } else {
+    movieTitle = "";
 
     for (i=3; i < title.length; i++) {
         if (i>3 && i< title.length){
@@ -47,6 +50,7 @@ function movie() {
             movieTitle += title[i];
         }
     }
+}
 
     var queryUrl = "http://www.omdbapi.com/?t=" + movieTitle + "&y=&plot=short&apikey=trilogy";
 
