@@ -4,6 +4,7 @@ var keys = require("./keys.js");
 var fs = require("fs");
 var request = require("request");
 var Spotify = require("node-spotify-api");
+var Twitter = require("twitter")
 
 //console.log(keys);
 
@@ -31,12 +32,40 @@ switch (task) {
 
 
 function tweets() {
-    console.log("\nI Hate Tweeting.");
+
+    var client = new Twitter({
+        consumer_key: process.env.TWITTER_CONSUMER_KEY,
+        consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+        access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
+        access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
+    });
+
+    var params = { screen_name: 'Geyser_Grand' };
+    client.get('statuses/user_timeline', params, function (error, tweets, response) {
+        if (error) {
+            return console.log("error: "+ error);
+        }
+
+        fs.appendFile("log.txt", " ***_TWITTER_*** ", function(err){});
+
+        for (i = 0; i < 20; i++) {
+            console.log("\nDate Created: " + tweets[i].created_at);
+            console.log("\nTweet: \n" + tweets[i].text);
+            console.log("\n---------------");
+
+            fs.appendFile("log.txt", " ----- " + tweets[i].text, function(err){});
+        }
+    });
+
+    //statuses.created_at
+    //statuses.text        
 }
 
 
-
+ 
 function song() {
+
+    //process user input 
     if (process.argv[3] === undefined) {
         var songTitle = "The Sign";
     } else {
@@ -52,6 +81,7 @@ function song() {
     }
     console.log(songTitle);
 
+    //send request to Spotify and process result
     var spotify = new Spotify({
         id: keys.spotify.id,
         secret: keys.spotify.secret
@@ -61,22 +91,27 @@ function song() {
         if (err) {
             return console.log('Error occurred: ' + err);
         }
+
+        fs.appendFile("log.txt", " ***_SPOTIFY_*** ", function(){});
+
         for (i = 0; i < data.tracks.items.length; i++) {
             var info = data.tracks.items[i];
 
             if (info.name === songTitle) {
-                var artist = info.artists[0].name;
-                    console.log("\nArtist: " + artist);
                 var song = info.name;
-                    console.log("Song Name: " + song);
-                var preview = info.external_urls.spotify;
-                    console.log("Preview Link: " + preview);
+                console.log("Song Name: " + song);
+                var artist = info.artists[0].name;
+                console.log("\nArtist: " + artist);
                 var album = info.album.name;
-                    console.log("Album Name: " + album);
-            } 
-            // else {
-            //     return //console.log("\nInfo Not Found");
-            // }
+                console.log("Album Name: " + album);
+                var preview = info.external_urls.spotify;
+                console.log("Preview Link: " + preview);
+
+                fs.appendFile("log.txt", " ----- Song: " + song
+                                        + " ----- Artist: " + artist 
+                                        + " ----- Album: " + album 
+                                        + " ----- Link: " + preview, function(){});
+            }
         }
     });
 
@@ -85,6 +120,8 @@ function song() {
 
 
 function movie() {
+
+    //process user input for movie title
     if (process.argv[3] === undefined) {
         var movieTitle = "Mr Nobody";
     } else {
@@ -100,11 +137,14 @@ function movie() {
     }
     console.log(movieTitle);
 
+    //send request to OMDB and process result
     movieTitle = encodeURIComponent(movieTitle).replace(/'/g, "%27");
-    //encodeURIComponent(query).replace(/'/g,"%27").replace(/"/g,"%22");
     var queryUrl = "http://www.omdbapi.com/?t=" + movieTitle + "&y=&plot=short&apikey=trilogy";
-    console.log(queryUrl);
+
     request(queryUrl, function (error, response, body) {
+
+        fs.appendFile("log.txt", " ***_OMDB_*** ", function(){});
+
         if (!error && response.statusCode === 200) {
             var movieData = JSON.parse(body);
             console.log("\nMovie Title: " + movieData.Title);
@@ -114,6 +154,13 @@ function movie() {
             console.log("Produced in: " + movieData.Country);
             console.log("Language: " + movieData.Language);
             console.log("Plot: " + movieData.Plot);
+
+            fs.appendFile("log.txt", " ----- Movie Title: " + movieData.Title
+                                        + " ----- Release Year: " + movieData.Year 
+                                        + " ----- Rated: " + movieData.Rated 
+                                        + " ----- Rotten Tomatoes: " + movieData.Ratings[1].Value
+                                        + " ----- Plot: " + movieData.Plot, function(){});
+
         } else {
             return console.log(body.Error);
         }
@@ -123,5 +170,63 @@ function movie() {
 
 
 function txtTask() {
-    console.log("\nDo that thing on the txt file.");
+
+    fs.readFile("random.txt", "utf8", function (error, data) {
+        if (error) {
+            return console.log(error);
+        }
+
+        var fileRead = data.split(",");
+        var songTitle = fileRead[1];
+        console.log(songTitle);
+
+        switch (fileRead[0]) {
+            case "my-tweets":
+                tweets();
+                break;
+
+            case "spotify-this-song":
+                var spotify = new Spotify({
+                    id: keys.spotify.id,
+                    secret: keys.spotify.secret
+                });
+
+                spotify.search({ type: 'track', query: songTitle, limit: 1 }, function (err, data) {
+                    if (err) {
+                        return console.log('Error occurred: ' + err);
+                    }
+
+                    fs.appendFile("log.txt", " ***_SPOTIFY FROM RANDOM.TXT FILE_*** ", function(){});
+
+                    for (i = 0; i < data.tracks.items.length; i++) {
+                        var info = data.tracks.items[i];
+                        if ('"' + info.name + '"' === songTitle) {
+                            var song = info.name;
+                            console.log("Song Name: " + song);
+                            var artist = info.artists[0].name;
+                            console.log("\nArtist: " + artist);
+                            var album = info.album.name;
+                            console.log("Album Name: " + album);
+                            var preview = info.external_urls.spotify;
+                            console.log("Preview Link: " + preview);
+                            
+
+                            fs.appendFile("log.txt", " ----- Song: " + song
+                                        + " ----- Artist: " + artist 
+                                        + " ----- Album: " + album 
+                                        + " ----- Link: " + preview, function(){});
+                        }
+
+                    }
+                });
+                break;
+
+            case "movie-this":
+                movie()
+                break;
+
+
+        }
+        console.log(fileRead);
+    });
 }
