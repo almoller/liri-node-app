@@ -31,6 +31,7 @@ switch (task) {
 }
 
 
+
 function tweets() {
 
     var client = new Twitter({
@@ -46,19 +47,17 @@ function tweets() {
             return console.log("error: "+ error);
         }
 
-        fs.appendFile("log.txt", " ***_TWITTER_*** ", function(err){});
+        fs.appendFile("log.txt", " ***** TWITTER ***** ", function(err){});
 
         for (i = 0; i < 20; i++) {
             console.log("\nDate Created: " + tweets[i].created_at);
             console.log("\nTweet: \n" + tweets[i].text);
-            console.log("\n---------------");
+            console.log("\n-------------------------");
 
             fs.appendFile("log.txt", " ----- " + tweets[i].text, function(err){});
         }
     });
-
-    //statuses.created_at
-    //statuses.text        
+     
 }
 
 
@@ -87,21 +86,21 @@ function song() {
         secret: keys.spotify.secret
     });
 
-    spotify.search({ type: 'track', query: songTitle }, function (err, data) {
+    spotify.search({ type: 'track', query: songTitle, limit: 10 }, function (err, data) {
         if (err) {
             return console.log('Error occurred: ' + err);
         }
 
-        fs.appendFile("log.txt", " ***_SPOTIFY_*** ", function(){});
+        fs.appendFile("log.txt", " ***** SPOTIFY ***** ", function(){});
 
         for (i = 0; i < data.tracks.items.length; i++) {
             var info = data.tracks.items[i];
 
             if (info.name === songTitle) {
                 var song = info.name;
-                console.log("Song Name: " + song);
+                console.log("\nSong Name: " + song);
                 var artist = info.artists[0].name;
-                console.log("\nArtist: " + artist);
+                console.log("Artist: " + artist);
                 var album = info.album.name;
                 console.log("Album Name: " + album);
                 var preview = info.external_urls.spotify;
@@ -138,12 +137,14 @@ function movie() {
     console.log(movieTitle);
 
     //send request to OMDB and process result
+    var omdb = keys.omdb.apikey;
+
     movieTitle = encodeURIComponent(movieTitle).replace(/'/g, "%27");
-    var queryUrl = "http://www.omdbapi.com/?t=" + movieTitle + "&y=&plot=short&apikey=trilogy";
+    var queryUrl = "http://www.omdbapi.com/?t=" + movieTitle + "&y=&plot=short&apikey=" + omdb;
 
     request(queryUrl, function (error, response, body) {
 
-        fs.appendFile("log.txt", " ***_OMDB_*** ", function(){});
+        fs.appendFile("log.txt", " ***** OMDB ***** ", function(){});
 
         if (!error && response.statusCode === 200) {
             var movieData = JSON.parse(body);
@@ -178,7 +179,6 @@ function txtTask() {
 
         var fileRead = data.split(",");
         var songTitle = fileRead[1];
-        console.log(songTitle);
 
         switch (fileRead[0]) {
             case "my-tweets":
@@ -196,15 +196,15 @@ function txtTask() {
                         return console.log('Error occurred: ' + err);
                     }
 
-                    fs.appendFile("log.txt", " ***_SPOTIFY FROM RANDOM.TXT FILE_*** ", function(){});
+                    fs.appendFile("log.txt", " ***** SPOTIFY FROM RANDOM.TXT FILE ***** ", function(){});
 
                     for (i = 0; i < data.tracks.items.length; i++) {
                         var info = data.tracks.items[i];
                         if ('"' + info.name + '"' === songTitle) {
                             var song = info.name;
-                            console.log("Song Name: " + song);
+                            console.log("\nSong Name: " + song);
                             var artist = info.artists[0].name;
-                            console.log("\nArtist: " + artist);
+                            console.log("Artist: " + artist);
                             var album = info.album.name;
                             console.log("Album Name: " + album);
                             var preview = info.external_urls.spotify;
@@ -227,6 +227,5 @@ function txtTask() {
 
 
         }
-        console.log(fileRead);
     });
 }
