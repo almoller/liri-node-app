@@ -1,6 +1,6 @@
 # liri-node-app
 
-This LIRI App is a Node.JS application that takes commands in the terminal to retrieve, display and log data from Twitter, Spotify, and the OMDB movie database.
+This LIRI App is a Node.JS application that takes commands in the terminal to retrieve, display and log data from Twitter, Spotify, and the OMDB movie database. All data requests are logged in the file log.txt
 
 In the terminal, run "node liri.js" plus the desired arguments
 
